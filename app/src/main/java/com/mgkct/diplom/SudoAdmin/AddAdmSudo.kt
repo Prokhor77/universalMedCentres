@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,7 +15,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.OffsetEffect
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -52,14 +55,18 @@ class AddAdmSudoActivity : ComponentActivity() {
 
 data class Admin(
     val id: Int,
-    val full_name: String?,
-    val email: String?,
+    val full_name: String,
+    val email: String,
     val center_name: String,
-    val password: String?,
-    val address: String?, // Nullable
-    val med_center_id: Int? // Nullable
+    val password: String,
+    val address: String,
+    val med_center_id: Int
 )
 
+data class Polyclinics(
+    val id_center: Int,
+    val center_name: String
+)
 
 interface AdminApiService {
     @GET("admins")
@@ -75,7 +82,7 @@ interface AdminApiService {
     suspend fun deleteAdmin(@Path("id") id: Int): Response<ResponseBody>
 
     @GET("polyclinics")
-    suspend fun getPolyclinics(): List<Polyclinic>
+    suspend fun getPolyclinics(): List<Polyclinics>
 
     @GET("med-center-id/{center_name}")
     suspend fun getMedCenterIdByName(@Path("center_name") centerName: String): MedCenter
@@ -149,7 +156,9 @@ fun AddAdmSudoScreen(navController: NavController) {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            Column(modifier = Modifier.padding(paddingValues).padding(16.dp)) {
+            Column(modifier = Modifier
+                .padding(paddingValues)
+                .padding(16.dp)) {
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -286,8 +295,22 @@ fun AddOrEditAdminDialog(admin: Admin?, onDismiss: () -> Unit, onSaveAdmin: (Adm
     var name by remember { mutableStateOf(admin?.full_name ?: "") }
     var email by remember { mutableStateOf(admin?.email ?: "") }
     var password by remember { mutableStateOf(admin?.password ?: "") }
-    var polyclinic by remember { mutableStateOf(admin?.center_name ?: "") }
     var address by remember { mutableStateOf(admin?.address ?: "") }
+    var selectedPolyclinic by remember { mutableStateOf(admin?.center_name ?: "") }
+    var medCenterId by remember { mutableStateOf(admin?.med_center_id ?: 0) }
+    var expanded by remember { mutableStateOf(false) }
+    val polyclinics = remember { mutableStateListOf<Polyclinics>() }
+
+    // Загрузка списка поликлиник при открытии диалога
+    LaunchedEffect(Unit) {
+        try {
+            val polyclinicsList = AdminRetrofitInstance.api.getPolyclinics()
+            polyclinics.clear()
+            polyclinics.addAll(polyclinicsList)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -302,20 +325,45 @@ fun AddOrEditAdminDialog(admin: Admin?, onDismiss: () -> Unit, onSaveAdmin: (Adm
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("Адрес") })
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = polyclinic, onValueChange = { polyclinic = it }, label = { Text("Поликлиника") })
+                OutlinedTextField(
+                    value = selectedPolyclinic,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Поликлиника") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = true }
+                )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    polyclinics.forEach { polyclinic ->
+                        DropdownMenuItem(
+                            text = { Text(polyclinic.center_name) },
+                            onClick = {
+                                selectedPolyclinic = polyclinic.center_name
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
                     val newAdmin = Admin(
-                        id = 0,
+                        id = admin?.id ?: 0,
                         full_name = name,
                         email = email,
-                        center_name = polyclinic,
+                        center_name = selectedPolyclinic,
                         password = password,
-                        address = "", // Или другое значение
-                        med_center_id = null // Или другое значение
+                        address = address,
+                        med_center_id = medCenterId
                     )
                     if (admin == null) {
                         CoroutineScope(Dispatchers.IO).launch {

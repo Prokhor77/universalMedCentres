@@ -96,8 +96,6 @@ interface ApiService {
     @GET("polyclinics")
     suspend fun getPolyclinics(): List<Polyclinic>
 
-    @GET("med-center-id/{center_name}")
-    suspend fun getMedCenterIdByName(@Path("center_name") centerName: String): MedCenter
 }
 
 object RetrofitInstance {
@@ -328,7 +326,6 @@ fun AddOrEditDoctorDialog(doctor: MainDoctor?, onDismiss: () -> Unit, onSaveDoct
     var selectedPolyclinic by remember { mutableStateOf(doctor?.center_name ?: "") }
     var medCenterId by remember { mutableStateOf(doctor?.med_center_id ?: 0) }
 
-    val coroutineScope = rememberCoroutineScope()
     val polyclinics = remember { mutableStateListOf<Polyclinic>() }
     var expanded by remember { mutableStateOf(false) }
 
@@ -371,7 +368,6 @@ fun AddOrEditDoctorDialog(doctor: MainDoctor?, onDismiss: () -> Unit, onSaveDoct
                         },
                         modifier = Modifier.menuAnchor()
                     )
-
                     DropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
