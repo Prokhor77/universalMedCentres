@@ -82,10 +82,7 @@ interface AdminApiService {
     suspend fun deleteAdmin(@Path("id") id: Int): Response<ResponseBody>
 
     @GET("polyclinics")
-    suspend fun getPolyclinics(): List<Polyclinics>
-
-    @GET("med-center-id/{center_name}")
-    suspend fun getMedCenterIdByName(@Path("center_name") centerName: String): MedCenter
+    suspend fun getPolyclinics(): List<Polyclinic>
 }
 
 object AdminRetrofitInstance {
@@ -299,14 +296,14 @@ fun AddOrEditAdminDialog(admin: Admin?, onDismiss: () -> Unit, onSaveAdmin: (Adm
     var selectedPolyclinic by remember { mutableStateOf(admin?.center_name ?: "") }
     var medCenterId by remember { mutableStateOf(admin?.med_center_id ?: 0) }
     var expanded by remember { mutableStateOf(false) }
-    val polyclinics = remember { mutableStateListOf<Polyclinics>() }
+    val polyclinics = remember { mutableStateListOf<Polyclinic>() }
 
     // Загрузка списка поликлиник при открытии диалога
     LaunchedEffect(Unit) {
         try {
-            val polyclinicsList = AdminRetrofitInstance.api.getPolyclinics()
+            val response = AdminRetrofitInstance.api.getPolyclinics()
             polyclinics.clear()
-            polyclinics.addAll(polyclinicsList)
+            polyclinics.addAll(response)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -317,38 +314,56 @@ fun AddOrEditAdminDialog(admin: Admin?, onDismiss: () -> Unit, onSaveAdmin: (Adm
         title = { Text(if (admin == null) "Добавить администратора" else "Редактировать администратора") },
         text = {
             Column {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("ФИО") })
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Пароль") })
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("Адрес") })
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("ФИО") })
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = selectedPolyclinic,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Поликлиника") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { expanded = true }
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
-                DropdownMenu(
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Пароль") })
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = address,
+                    onValueChange = { address = it },
+                    label = { Text("Адрес") })
+                Spacer(modifier = Modifier.height(8.dp))
+                ExposedDropdownMenuBox(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onExpandedChange = { expanded = !expanded }
                 ) {
-                    polyclinics.forEach { polyclinic ->
-                        DropdownMenuItem(
-                            text = { Text(polyclinic.center_name) },
-                            onClick = {
-                                selectedPolyclinic = polyclinic.center_name
-                                expanded = false
-                            }
-                        )
+                    OutlinedTextField(
+                        value = selectedPolyclinic,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Поликлиника") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        },
+                        modifier = Modifier.menuAnchor()
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        polyclinics.forEach { polyclinic ->
+                            DropdownMenuItem(
+                                text = { Text(polyclinic.center_name) },
+                                onClick = {
+                                    selectedPolyclinic = polyclinic.center_name
+                                    medCenterId = polyclinic.id_center
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
