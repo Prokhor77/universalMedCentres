@@ -58,7 +58,7 @@ fun AddMedCenterScreen(navController: NavController) {
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            Frame.Text(text = "Тут будет страница добавления мед. центра")
+            Frame.Text(text = "Cтраница добавления мед. центра")
         }
     }
 }
