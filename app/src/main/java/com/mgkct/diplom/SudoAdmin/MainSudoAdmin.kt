@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddBusiness
+import androidx.compose.material.icons.filled.AddModerator
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.People
@@ -67,6 +69,7 @@ class MainSudoAdminActivity : ComponentActivity() {
                 composable("add_adm_sudo") { AddAdmSudoScreen(navController) }
                 composable("add_main_doctor") { AddMainDoctorScreen(navController) }
                 composable("login_screen") { LoginScreen(navController) }
+                composable("add_med_center") { AddMedCenterScreen(navController) }
             }
         }
     }
@@ -133,10 +136,17 @@ fun MainSudoAdminScreen(navController: NavController) {
                                 }
                             )
                             DropdownMenuItem(
+                                text = { Text("Управление Мед центрами") },
+                                onClick = { navController.navigate("add_med_center") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.AddBusiness, contentDescription = "Управление Мед центрами")
+                                }
+                            )
+                            DropdownMenuItem(
                                 text = { Text("Управление Администраторами") },
                                 onClick = { navController.navigate("add_adm_sudo") },
                                 leadingIcon = {
-                                    Icon(Icons.Default.Settings, contentDescription = "Управление администраторами")
+                                    Icon(Icons.Default.AddModerator, contentDescription = "Управление администраторами")
                                 }
                             )
                             DropdownMenuItem(

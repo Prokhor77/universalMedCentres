@@ -32,6 +32,7 @@
         <activity android:name=".SudoAdmin.MainSudoAdminActivity" />
         <activity android:name=".SudoAdmin.AddAdmSudoActivity" />
         <activity android:name=".SudoAdmin.AddMainDoctorActivity" />
+        <activity android:name=".SudoAdmin.AddMedCenter" />
         <activity android:name=".Admin.MainAdminActivity" />
         <activity android:name=".Admin.AddDoctorActivity" />
 

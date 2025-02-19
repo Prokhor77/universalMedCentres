@@ -57,6 +57,7 @@ import com.mgkct.diplom.Admin.AddDoctorScreen
 import com.mgkct.diplom.Admin.MainAdminScreen
 import com.mgkct.diplom.SudoAdmin.AddAdmSudoScreen
 import com.mgkct.diplom.SudoAdmin.AddMainDoctorScreen
+import com.mgkct.diplom.SudoAdmin.AddMedCenterScreen
 import com.mgkct.diplom.SudoAdmin.MainSudoAdminScreen
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -95,6 +96,7 @@ class LoginActivity : ComponentActivity() {
                 composable("add_adm_sudo") { AddAdmSudoScreen(navController) }
                 composable("add_main_doctor") { AddMainDoctorScreen(navController) }
                 composable("add_doctor") { AddDoctorScreen(navController) }
+                composable("add_med_center") { AddMedCenterScreen(navController) }
             }
         }
     }
