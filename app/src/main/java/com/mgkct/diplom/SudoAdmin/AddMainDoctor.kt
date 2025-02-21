@@ -204,7 +204,7 @@ fun AddMainDoctorScreen(navController: NavController) {
                             textAlign = TextAlign.Center // Выравнивание по центру
                         )
                         Image(
-                            painter = rememberImagePainter(R.drawable.poisk), // Используйте имя вашего GIF-файла
+                            painter = rememberImagePainter(R.drawable.undefined), // Используйте имя вашего GIF-файла
                             contentDescription = "Animated GIF",
                             contentScale = ContentScale.Fit,
                             modifier = Modifier.size(300.dp) // Увеличиваем размер GIF
@@ -464,7 +464,10 @@ fun MainDoctorItem(doctor: MainDoctor, onDelete: () -> Unit, onEdit: (MainDoctor
                 Text("Адрес: " + doctor.address, style = MaterialTheme.typography.bodyMedium) // Добавляем адрес
                 Text("Пароль: " + "*".repeat(doctor.password.orEmpty().length), style = MaterialTheme.typography.bodyMedium)
             }
-            Row {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.End
+            ){
                 IconButton(onClick = { onEdit(doctor) }) {
                     Icon(Icons.Default.Edit, contentDescription = "Редактировать")
                 }

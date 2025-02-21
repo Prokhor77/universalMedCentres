@@ -95,6 +95,14 @@ object AdminRetrofitInstance {
             .build()
             .create(AdminApiService::class.java)
     }
+
+    val medCenterApi: MedCenterApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(MedCenterApiService::class.java)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -184,7 +192,7 @@ fun AddAdmSudoScreen(navController: NavController) {
                             textAlign = TextAlign.Center
                         )
                         Image(
-                            painter = rememberImagePainter(R.drawable.poisk),
+                            painter = rememberImagePainter(R.drawable.undefined),
                             contentDescription = "Animated GIF",
                             contentScale = ContentScale.Fit,
                             modifier = Modifier.size(300.dp)
@@ -439,7 +447,10 @@ fun AdminItem(admin: Admin, onDelete: () -> Unit, onEdit: (Admin) -> Unit) {
                 Text("Адрес: " + admin.address, style = MaterialTheme.typography.bodyMedium) // Добавляем адрес
                 Text("Пароль: " + "*".repeat(admin.password.orEmpty().length), style = MaterialTheme.typography.bodyMedium)
             }
-            Row {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.End
+            ){
                 IconButton(onClick = { onEdit(admin) }) {
                     Icon(Icons.Default.Edit, contentDescription = "Редактировать")
                 }
