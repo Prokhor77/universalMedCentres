@@ -42,13 +42,13 @@ interface ApiService {
     @GET("main-doctors")
     suspend fun getMainDoctors(): List<MainDoctor>
 
-    @POST("add-doctor")
+    @POST("add-main-doctor")
     suspend fun addDoctor(@Body doctor: MainDoctor): Response<ResponseBody>
 
-    @PUT("update-doctor/{id}")
+    @PUT("update-main-doctor/{id}")
     suspend fun updateDoctor(@Path("id") id: Int, @Body doctor: MainDoctor): Response<ResponseBody>
 
-    @DELETE("delete-doctor/{id}")
+    @DELETE("delete-main-doctor/{id}")
     suspend fun deleteDoctor(@Path("id") id: Int): Response<ResponseBody>
 
     // Работа с администраторами
@@ -67,6 +67,15 @@ interface ApiService {
     // Получение списка поликлиник
     @GET("polyclinics")
     suspend fun getPolyclinics(): List<Polyclinic>
+
+    @GET("work-types")
+    suspend fun getWorkTypes(): List<WorkType>
+
+    @GET("work-sections")
+    suspend fun getWorkSections(): List<WorkSection>
+
+    @GET("doctors")
+    suspend fun getDoctors(): List<Doctor>
 }
 
 object RetrofitInstance {
@@ -88,6 +97,16 @@ data class UserInfo(
 
 data class MedCenterInfo(
     val center_name: String
+)
+
+data class WorkType(
+    val type_id: Int,
+    val type_description: String
+)
+
+data class WorkSection(
+    val section_id: Int,
+    val section_description: String
 )
 
 data class LoginRequest(val email: String, val password: String)
@@ -115,6 +134,18 @@ data class MainDoctor(
     val password: String?,
     val address: String,
     val med_center_id: Int
+)
+
+data class Doctor(
+    val id: Int,
+    val full_name: String,
+    val email: String,
+    val password: String,
+    val center_name: String,
+    val med_center_id: Int,
+    val address: String,
+    val work_type_description: String,
+    val work_section_description: String
 )
 
 data class Admin(
