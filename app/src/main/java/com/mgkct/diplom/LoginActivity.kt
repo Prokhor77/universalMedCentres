@@ -50,9 +50,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.mgkct.diplom.Admin.AddDoctorScreen
 import com.mgkct.diplom.Admin.MainAdminScreen
 import com.mgkct.diplom.SudoAdmin.AddAdmSudoScreen
@@ -64,17 +66,40 @@ import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 import java.io.IOException
 
 // Определение API
 interface ApiService {
     @POST("/login")
     suspend fun login(@Body request: LoginRequest): LoginResponse
+
+    @GET("/user/{id}")
+    suspend fun getUserInfo(@Path("id") userId: String): UserInfo
+
+    @GET("/med_center/{id}")
+    suspend fun getMedCenterInfo(@Path("id") centerId: String): MedCenterInfo
 }
 
+
+data class UserInfo(
+    val full_name: String,
+    val med_center_id: String
+)
+
+data class MedCenterInfo(
+    val center_name: String
+)
+
 data class LoginRequest(val email: String, val password: String)
-data class LoginResponse(val role: String, val db_id: String)
+data class LoginResponse(
+    val role: String,
+    val db_id: String,
+    val full_name: String,
+    val center_name: String
+)
 
 val retrofit = Retrofit.Builder()
     .baseUrl("http://10.0.2.2:8000/")
@@ -92,7 +117,17 @@ class LoginActivity : ComponentActivity() {
             NavHost(navController, startDestination = "login_screen") {
                 composable("login_screen") { LoginScreen(navController) }
                 composable("main_sudo_admin") { MainSudoAdminScreen(navController) }
-                composable("main_admin") { MainAdminScreen(navController) }
+                composable(
+                    "main_admin/{full_name}/{center_name}",
+                    arguments = listOf(
+                        navArgument("full_name") { type = NavType.StringType },
+                        navArgument("center_name") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val fullName = backStackEntry.arguments?.getString("full_name") ?: ""
+                    val centerName = backStackEntry.arguments?.getString("center_name") ?: ""
+                    MainAdminScreen(navController, fullName, centerName)
+                }
                 composable("add_adm_sudo") { AddAdmSudoScreen(navController) }
                 composable("add_main_doctor") { AddMainDoctorScreen(navController) }
                 composable("add_doctor") { AddDoctorScreen(navController) }
@@ -241,7 +276,7 @@ fun LoginScreen(navController: NavController) {
                                     val response = apiService.login(LoginRequest(email, password))
                                     when (response.role) {
                                         "sudo-admin" -> navController.navigate("main_sudo_admin")
-                                        "admin" -> navController.navigate("main_admin")
+                                        "admin" -> navController.navigate("main_admin/${response.full_name}/${response.center_name}")
                                         else -> errorMessage = "Неизвестная роль: ${response.role}"
                                     }
                                     Log.e("MyApp", "db_name: ${response.db_id}")

@@ -25,21 +25,42 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.mgkct.diplom.R
 
 class MainAdminActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MainAdminScreen(rememberNavController())
+            val navController = rememberNavController()
+            NavHost(navController, startDestination = "main_admin") {
+                composable(
+                    "main_admin/{full_name}/{center_name}",
+                    arguments = listOf(
+                        navArgument("full_name") { type = NavType.StringType },
+                        navArgument("center_name") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val fullName = backStackEntry.arguments?.getString("full_name") ?: ""
+                    val centerName = backStackEntry.arguments?.getString("center_name") ?: ""
+                    MainAdminScreen(navController, fullName, centerName)
+                }
+            }
         }
     }
 }
 
 @Composable
-fun MainAdminScreen(navController: NavController) {
-    val medicalCenter = "ЛОДЭ"
+fun MainAdminScreen(
+    navController: NavController,
+    fullName: String,
+    centerName: String
+) {
+    val medicalCenter = centerName
     val totalAppointments = 35
     val totalDoctors = 134
     val doctorsOnShift = 78
@@ -50,6 +71,7 @@ fun MainAdminScreen(navController: NavController) {
 
     val dailyIncome = "2500 BYN"
     val paidServices = 48
+    val freeServices = 165
 
     val newRequests = 5
     val complaints = 2
@@ -85,7 +107,7 @@ fun MainAdminScreen(navController: NavController) {
                                 modifier = Modifier.size(30.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Иванов Сергей Васильевич")
+                            Text(fullName)
                         }
                     },
                     actions = {
@@ -106,6 +128,13 @@ fun MainAdminScreen(navController: NavController) {
                             DropdownMenuItem(
                                 text = { Text("Добавить врача") },
                                 onClick = { navController.navigate("add_doctor") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.AccountCircle, contentDescription = "Добавить врача")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Управление стац лечением") },
+                                onClick = { navController.navigate("") },
                                 leadingIcon = {
                                     Icon(Icons.Default.AccountCircle, contentDescription = "Добавить врача")
                                 }
@@ -156,7 +185,7 @@ fun MainAdminScreen(navController: NavController) {
                     title = "📊 Статистика пациентов",
                     items = listOf(
                         "Количество записанных пациентов: $registeredPatients",
-                        "Среднее время ожидания: $avgWaitingTime"
+                        "Среднее время приема: $avgWaitingTime"
                     )
                 )
 
@@ -167,7 +196,8 @@ fun MainAdminScreen(navController: NavController) {
                     title = "💰 Финансовая статистика",
                     items = listOf(
                         "Доход за день: $dailyIncome",
-                        "Оплаченные услуги: $paidServices"
+                        "Оплаченные услуги: $paidServices",
+                        "Бесплатные услуги: $freeServices"
                     )
                 )
 
@@ -236,5 +266,9 @@ fun InfoCard(text: String) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainAdminScreen() {
-    MainAdminScreen(navController = rememberNavController())
+    MainAdminScreen(
+        navController = rememberNavController(),
+        fullName = "Иванов Сергей Васильевич", // Пример значения
+        centerName = "ЛОДЭ" // Пример значения
+    )
 }
