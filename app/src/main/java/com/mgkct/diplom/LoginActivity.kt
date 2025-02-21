@@ -21,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,7 +38,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -55,58 +53,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.mgkct.diplom.Admin.AddDoctorScreen
-import com.mgkct.diplom.Admin.MainAdminScreen
 import com.mgkct.diplom.SudoAdmin.AddAdmSudoScreen
 import com.mgkct.diplom.SudoAdmin.AddMainDoctorScreen
 import com.mgkct.diplom.SudoAdmin.AddMedCenterScreen
 import com.mgkct.diplom.SudoAdmin.MainSudoAdminScreen
+import com.mgkct.diplom.admin.AddDoctorScreen
+import com.mgkct.diplom.admin.MainAdminScreen
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
 import java.io.IOException
 
-// Определение API
-interface ApiService {
-    @POST("/login")
-    suspend fun login(@Body request: LoginRequest): LoginResponse
-
-    @GET("/user/{id}")
-    suspend fun getUserInfo(@Path("id") userId: String): UserInfo
-
-    @GET("/med_center/{id}")
-    suspend fun getMedCenterInfo(@Path("id") centerId: String): MedCenterInfo
-}
-
-
-data class UserInfo(
-    val full_name: String,
-    val med_center_id: String
-)
-
-data class MedCenterInfo(
-    val center_name: String
-)
-
-data class LoginRequest(val email: String, val password: String)
-data class LoginResponse(
-    val role: String,
-    val db_id: String,
-    val full_name: String,
-    val center_name: String
-)
-
-val retrofit = Retrofit.Builder()
-    .baseUrl("http://10.0.2.2:8000/")
-    .addConverterFactory(GsonConverterFactory.create())
-    .build()
-
-val apiService: ApiService = retrofit.create(ApiService::class.java)
 
 // Активность для экрана входа
 class LoginActivity : ComponentActivity() {
@@ -273,7 +229,7 @@ fun LoginScreen(navController: NavController) {
                                 isLoading = true
                                 errorMessage = "" // Очистка ошибки перед новой попыткой входа
                                 try {
-                                    val response = apiService.login(LoginRequest(email, password))
+                                    val response = RetrofitInstance.api.login(LoginRequest(email, password))
                                     when (response.role) {
                                         "sudo-admin" -> navController.navigate("main_sudo_admin")
                                         "admin" -> navController.navigate("main_admin/${response.full_name}/${response.center_name}")
