@@ -64,7 +64,6 @@ interface ApiService {
     @DELETE("delete-admin/{id}")
     suspend fun deleteAdmin(@Path("id") id: Int): Response<ResponseBody>
 
-    // Получение списка поликлиник
     @GET("polyclinics")
     suspend fun getPolyclinics(): List<Polyclinic>
 
@@ -79,7 +78,7 @@ interface ApiService {
 }
 
 object RetrofitInstance {
-    private const val BASE_URL = "http://10.0.2.2:8000/"
+    private const val BASE_URL = "http://10.0.2.2:8080"
 
     val api: ApiService by lazy {
         Retrofit.Builder()

@@ -1,6 +1,7 @@
 package com.mgkct.diplom.admin
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -36,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +58,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mgkct.diplom.R
+import com.mgkct.diplom.RetrofitInstance
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainAdminActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +90,38 @@ fun MainAdminScreen(
     fullName: String,
     centerName: String
 ) {
+    // Состояние для хранения id центра
+    var centerId by remember { mutableStateOf<Int?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Запускаем эффект для получения id центра
+    LaunchedEffect(centerName) {
+        withContext(Dispatchers.IO) {
+            try {
+                Log.d("MainAdminScreen", "Trying to fetch polyclinics for center: $centerName")
+                val polyclinics = RetrofitInstance.api.getPolyclinics()
+
+                // Логируем полученные данные
+                Log.d("MainAdminScreen", "Received polyclinics: ${polyclinics.joinToString { it.center_name }}")
+
+                val center = polyclinics.find {
+                    it.center_name.equals(centerName, ignoreCase = true)
+                }
+
+                if (center != null) {
+                    centerId = center.id_center
+                    Log.d("MainAdminScreen", "Success! Center '$centerName' found with id: $centerId")
+                } else {
+                    errorMessage = "Center '$centerName' not found in polyclinics list"
+                    Log.w("MainAdminScreen", errorMessage!!)
+                }
+            } catch (e: Exception) {
+                errorMessage = "Error fetching polyclinics: ${e.message}"
+                Log.e("MainAdminScreen", errorMessage!!, e)
+            }
+        }
+    }
+
     val medicalCenter = centerName
     val totalAppointments = 35
     val totalDoctors = 134
@@ -257,7 +294,7 @@ fun InfoSection(title: String, items: List<String>) {
         items.forEach { item ->
             Text(
                 text = item,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp) // Увеличиваем размер шрифта
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp)
             )
             Spacer(modifier = Modifier.height(4.dp))
         }
@@ -282,7 +319,7 @@ fun InfoCard(text: String) {
         ) {
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp) // Увеличиваем размер шрифта
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp)
             )
         }
     }
@@ -293,7 +330,7 @@ fun InfoCard(text: String) {
 fun PreviewMainAdminScreen() {
     MainAdminScreen(
         navController = rememberNavController(),
-        fullName = "Иванов Сергей Васильевич", // Пример значения
-        centerName = "ЛОДЭ" // Пример значения
+        fullName = "Иванов Сергей Васильевич",
+        centerName = "ЛОДЭ"
     )
 }
